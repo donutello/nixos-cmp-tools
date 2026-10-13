@@ -1,0 +1,101 @@
+Copyright (C) 2026 donutello and Amogh Munikote. GPL-2.0-only.
+Rewrites code from amoghmunikote/cmpunlocker's Gen2 patches: re-applies the Gen2 registers GSP-RM
+reverts and retries the link retrain, as Wh1stle05/cmp90hx's patch 0017 does on the 90HX.
+
+--- a/kernel-open/nvidia/nv.c
++++ b/kernel-open/nvidia/nv.c
+@@ -1456,8 +1456,8 @@
+     struct pci_dev *upstream;
+     void __iomem *bar0;
+     u16 gpu_ctl2, upstream_ctl2, upstream_ctl, link_status = 0;
+-    u32 cya0, link_config;
+-    int ret, attempt;
++    u32 cya0, link_config, misc1;
++    int ret, attempt, rl_try;
+ 
+     if ((gpu == NULL) ||
+         ((gpu->device != 0x20c2) && (gpu->device != 0x2082)))
+@@ -1477,13 +1477,37 @@
+                       "CMP Gen2: cannot map BAR0; skipping link retrain\n");
+         return;
+     }
++    /* GSP-RM init reverts PRIV_MISC_1 and the XP3G overrides; re-apply. */
++    misc1 = readl(bar0 + 0x8841c);
++    writel((misc1 | (1U << 11) | (1U << 13)) & ~((1U << 12) | (1U << 14)),
++           bar0 + 0x8841c);
+     cya0 = readl(bar0 + 0x8c2c0);
+     writel(cya0 & ~(1U << 2), bar0 + 0x8c2c0);
++    writel(0x00000000U, bar0 + 0x8e120);
++    writel(0x00000001U, bar0 + 0x8e110);
++    writel(0x00200000U, bar0 + 0x8e12c);
++    writel(0x00000004U, bar0 + 0x8e11c);
+     link_config = readl(bar0 + 0x8c040);
+     writel((link_config & ~0x000c0000U) | (2U << 18), bar0 + 0x8c040);
+     writel(0x00000006U, bar0 + 0x8872c);
+     (void)readl(bar0 + 0x8872c);
++    NV_DEV_PRINTF(NV_DBG_INFO, nv,
++                  "CMP Gen2: MISC1 0x%08x->0x%08x CYA0=0x%08x LINKCFG=0x%08x "
++                  "LTSSM=0x%08x LINKCAP=0x%08x PL=0x%08x XP3G=%08x/%08x/%08x/%08x\n",
++                  misc1, readl(bar0 + 0x8841c), readl(bar0 + 0x8c2c0),
++                  readl(bar0 + 0x8c040), readl(bar0 + 0x8872c),
++                  readl(bar0 + 0x88084), readl(bar0 + 0x8c1c0),
++                  readl(bar0 + 0x8e110), readl(bar0 + 0x8e120),
++                  readl(bar0 + 0x8e11c), readl(bar0 + 0x8e12c));
+     iounmap(bar0);
++    /* OPT_DISABLE_GEN3_SPEED fuse: bit 0 set means the card can never do Gen3. */
++    bar0 = ioremap(pci_resource_start(gpu, 0) + 0x820250, 4);
++    if (bar0 != NULL)
++    {
++        NV_DEV_PRINTF(NV_DBG_INFO, nv, "CMP Gen2: OPT_DISABLE_GEN3_SPEED=0x%08x\n",
++                      readl(bar0));
++        iounmap(bar0);
++    }
+     msleep(50);
+     ret = pcie_capability_read_word(gpu, PCI_EXP_LNKCTL2, &gpu_ctl2);
+     if (ret)
+@@ -1499,24 +1523,29 @@
+     ret = pcie_capability_write_word(upstream, PCI_EXP_LNKCTL2, upstream_ctl2);
+     if (ret)
+         goto capability_error;
+-    ret = pcie_capability_read_word(upstream, PCI_EXP_LNKCTL, &upstream_ctl);
+-    if (ret)
+-        goto capability_error;
+-    ret = pcie_capability_write_word(upstream, PCI_EXP_LNKCTL,
+-                                     upstream_ctl | PCI_EXP_LNKCTL_RL);
+-    if (ret)
+-        goto capability_error;
+-
+-    for (attempt = 0; attempt < 20; attempt++)
++    /* GSP-RM link management can win a single retrain; retry like 90HX 0017. */
++    for (attempt = 0; attempt < 5; attempt++)
+     {
+-        msleep(100);
+-        ret = pcie_capability_read_word(gpu, PCI_EXP_LNKSTA, &link_status);
+-        if (!ret &&
+-            ((link_status & PCI_EXP_LNKSTA_CLS) >= PCI_EXP_LNKSTA_CLS_5_0GB))
++        ret = pcie_capability_read_word(upstream, PCI_EXP_LNKCTL, &upstream_ctl);
++        if (ret)
++            goto capability_error;
++        ret = pcie_capability_write_word(upstream, PCI_EXP_LNKCTL,
++                                         upstream_ctl | PCI_EXP_LNKCTL_RL);
++        if (ret)
++            goto capability_error;
++
++        for (rl_try = 0; rl_try < 40; rl_try++)
+         {
+-            NV_DEV_PRINTF(NV_DBG_INFO, nv, "CMP Gen2: PCIe link trained to Gen%u\n",
+-                          link_status & PCI_EXP_LNKSTA_CLS);
+-            return;
++            msleep(100);
++            ret = pcie_capability_read_word(gpu, PCI_EXP_LNKSTA, &link_status);
++            if (!ret &&
++                ((link_status & PCI_EXP_LNKSTA_CLS) >= PCI_EXP_LNKSTA_CLS_5_0GB))
++            {
++                NV_DEV_PRINTF(NV_DBG_INFO, nv,
++                              "CMP Gen2: PCIe link trained to Gen%u (round %d)\n",
++                              link_status & PCI_EXP_LNKSTA_CLS, attempt);
++                return;
++            }
+         }
+     }
+ 

@@ -1,0 +1,94 @@
+{
+  "cmp170hx": {
+    "driver": "615.71.09",
+    "patches": [
+      "sec2-postbl-plm-ss-cfg",
+      "booter-verify",
+      "late-pma",
+      "bar0-pramin-clamp",
+      "ce-scrub-workarounds",
+      "persistent-sw-state",
+      "pcie-gen2",
+      "pcie-gen2-probe-retrain",
+      "name-string",
+      "bar1-resize-unlock",
+      "cmp-sku-mask",
+      "ecc-enable",
+      "ecc-fbpa-static",
+      "ecc-reporting"
+    ]
+  },
+  "cmp90hx": {
+    "driver": "610.43.03",
+    "patches": [
+      {
+        "from": "pearlfortune",
+        "path": "0014-6104303-cmp90hx-stockflow-rejoin14-multigpu-state.patch"
+      },
+      {
+        "from": "pearlfortune",
+        "path": "0015-6104303-cmp90hx-stockflow-rejoin15-serialized-start.patch"
+      },
+      {
+        "from": "jdowning",
+        "path": "90hx/0016-6104303-cmp90hx-stockflow-rejoin16-pcie-jtag-plm.patch"
+      },
+      {
+        "from": "wh1stle",
+        "path": "patches/0017-cmp90hx-gen2-retrain-retry.patch"
+      }
+    ]
+  },
+  "drivers": {
+    "610.43.03": {
+      "sha256_64bit": "sha256-ReLUwTSiPDXlDyU6SqY+fl6NF+PRhdSgfIpY6WEu05I=",
+      "openSha256": "sha256-QCXmqo2xNyIwjGv0da2MUC8ex641Mmc5DUI+uRFVwgE=",
+      "settingsSha256": "sha256-z/t+SdEQdVJPwjKIRHO02d264Kt47eWiOwwsaxmh4xQ=",
+      "persistencedSha256": "sha256-sOKUsAFHh0/COH+nNgbH9+7hWgivOzq4YmTuk9MOFfI="
+    },
+    "615.71.09": {
+      "sha256_64bit": "sha256-zc7tIrvrYSSNGm3qvCWWZz46ZQFpjucayNL9wo87cP4=",
+      "openSha256": "sha256-3gByMYIwFzRaLdDG+roCEOuKRRJDrljG9AlLnRZTirM=",
+      "settingsSha256": "sha256-LK1LU8mDkM/XVRKPBtuOZh9nIP/lGFLAJnmasEX8jhg=",
+      "persistencedSha256": "sha256-qPRb+3d88+2RcpUkoBTbjIaImnQ+jX+/6p1vXcJ5geE="
+    }
+  },
+  "repos": {
+    "amoghmunikote": {
+      "owner": "amoghmunikote",
+      "repo": "cmpunlocker",
+      "branch": "master",
+      "rev": "2d10f891a58824f0591c3332c4eccf37ff36b086",
+      "hash": "sha256-R9MT/TWeNxFSSJ3LK1Ek3/1yepU5K8ch82PpURfWAXw="
+    },
+    "jdowning": {
+      "owner": "jdowning100",
+      "repo": "cmpunlocker",
+      "rev": "2cdc63cf1ab80d8128cf9e77216e3f3c132b212f",
+      "hash": "sha256-t1xzzDQHOhGNUZcEmioQ7rkNEP3z2KJWvQ9xwO8zF6E="
+    },
+    "wh1stle": {
+      "owner": "Wh1stle05",
+      "repo": "cmp90hx",
+      "branch": "main",
+      "rev": "477c712e4d5a9c6b296c936d3d1b713bcdbfc1d9",
+      "hash": "sha256-UDvfBPo6DbX/8xC4mnc4xCSATnb/nskpcwO0b9b/ESI="
+    },
+    "nvidiaPstated": {
+      "owner": "sasha0552",
+      "repo": "nvidia-pstated",
+      "branch": "main",
+      "rev": "c67815c7723b2c394c67fb78d12d319d421e376d",
+      "hash": "sha256-/YdeBZoUhx5P4S43IIVnBqgWry/DjoXCqMSxtgz+oNw="
+    }
+  },
+  "pearlfortune": {
+    "tag": "v0.1.28",
+    "url": "https://github.com/pearlfortune/cmpunlocker/releases/download/v0.1.28/cmpunlocker-v0.1.28-linux-x64-90hx-stockflow.tar.gz",
+    "hash": "sha256-GcZ80Mst9e4Q6ijJetp1atowlVPyUAEp+XPDrfhPmcM="
+  },
+  "nvapi": {
+    "url": "https://download.nvidia.com/XFree86/nvapi-open-source-sdk/R555-OpenSource.tar",
+    "hash": "sha256-cTOcJ0pqYz8Ztr01jH8wRQY8a8EGt9xIiqpzYKbSudc="
+  }
+}
