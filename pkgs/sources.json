@@ -57,9 +57,9 @@
     "amoghmunikote": {
       "owner": "amoghmunikote",
       "repo": "cmpunlocker",
-      "branch": "master",
-      "rev": "2d10f891a58824f0591c3332c4eccf37ff36b086",
-      "hash": "sha256-R9MT/TWeNxFSSJ3LK1Ek3/1yepU5K8ch82PpURfWAXw="
+      "rev": "17535a0ab1e8d8a9797e096ac5a2495f3da16d2c",
+      "hash": "sha256-NrBzjH0D4PT4zTZ158+AzsKmJr40RURM4dlrk8t+fi0=",
+      "tag": "v0.5"
     },
     "jdowning": {
       "owner": "jdowning100",
